@@ -1,0 +1,40 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "LerApenasObjetosDoBucketRelatoriosCampo",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": "arn:aws:s3:::relatorios-campo/*"
+    },
+    {
+      "Sid": "GravarApenasNaTabelaTriagem",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem"
+      ],
+      "Resource": "arn:aws:dynamodb:us-east-1:000000000000:table/triagem"
+    },
+    {
+      "Sid": "InvocarApenasModeloHaikuNoBedrock",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:Converse"
+      ],
+      "Resource": "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+    },
+    {
+      "Sid": "GravarLogsApenasDaFuncaoTriagem",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:us-east-1:000000000000:log-group:/aws/lambda/triagem:*"
+    }
+  ]
+}
