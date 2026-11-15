@@ -1,0 +1,11 @@
+{
+  "id_alerta": "PIVO-01-20261022-0800",
+  "fazenda": "Fazenda Vale do Pardo - Ribeirão Preto/SP",
+  "cultura": "Cana-de-açúcar",
+  "equipamento": "Pivô Central 01",
+  "umidade_solo_percent": 64.5,
+  "pressao_bar": 4.1,
+  "vazao_m3_h": 180.0,
+  "temperatura_ambiente_c": 27.5,
+  "mensagem_telemetria": "Operação nominal. Lamina d'água aplicada conforme programação matinal sem variações de pressão."
+}

@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Projeto Integrador (AG822 - Agronegocio Ribeirao Preto):
+  Infraestrutura como Codigo para triagem de alertas de sensores de irrigacao,
+  armazenamento no DynamoDB e notificacao de resumo diario via SNS + SQS.
+
+Parameters:
+  ProjectTag:
+    Type: String
+    Default: "AG822-Integrador-Irrigacao"
+
+Resources:
+  AlertasIrrigacaoBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: "alertas-irrigacao"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+
+  AlertasIrrigacaoTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "alertas-irrigacao-ddb"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id_alerta
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id_alerta
+          KeyType: HASH
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+
+  BoletimIrrigacaoTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: "boletim-irrigacao-diario"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+
+  EngenheiroAgronomoQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      QueueName: "fila-engenheiro-agronomo"
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+
+  BoletimQueueSubscription:
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      TopicArn: !Ref BoletimIrrigacaoTopic
+      Protocol: sqs
+      Endpoint: !GetAtt EngenheiroAgronomoQueue.Arn
+
+Outputs:
+  BucketAlertas:
+    Description: "Bucket S3 de entrada dos sensores de irrigacao"
+    Value: !Ref AlertasIrrigacaoBucket
+
+  TabelaAlertasArn:
+    Description: "ARN da tabela DynamoDB de alertas"
+    Value: !GetAtt AlertasIrrigacaoTable.Arn
+
+  TopicoBoletimArn:
+    Description: "ARN do topico SNS para envio do resumo diario"
+    Value: !Ref BoletimIrrigacaoTopic
+
+  FilaAgronomoUrl:
+    Description: "URL da fila SQS assinante do boletim diario"
+    Value: !Ref EngenheiroAgronomoQueue

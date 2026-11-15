@@ -1,0 +1,11 @@
+{
+  "id_alerta": "PIVO-03-20261022-1415",
+  "fazenda": "Fazenda Vale do Pardo - Ribeirão Preto/SP",
+  "cultura": "Café Arábica Irrigado",
+  "equipamento": "Pivô Central 03",
+  "umidade_solo_percent": 19.5,
+  "pressao_bar": 0.4,
+  "vazao_m3_h": 12.0,
+  "temperatura_ambiente_c": 38.8,
+  "mensagem_telemetria": "CRÍTICO: Perda súbita de pressão para 0.4 bar compatível com rompimento de tubulação adutora e umidade do solo em nível de ponto de murcha (19.5%) sob calor de 38.8 C."
+}

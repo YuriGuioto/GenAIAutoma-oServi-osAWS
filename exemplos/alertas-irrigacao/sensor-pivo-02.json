@@ -1,0 +1,11 @@
+{
+  "id_alerta": "PIVO-02-20261022-1130",
+  "fazenda": "Fazenda Vale do Pardo - Ribeirão Preto/SP",
+  "cultura": "Soja",
+  "equipamento": "Pivô Central 02",
+  "umidade_solo_percent": 41.0,
+  "pressao_bar": 2.9,
+  "vazao_m3_h": 125.0,
+  "temperatura_ambiente_c": 33.0,
+  "mensagem_telemetria": "Queda gradual de 28% na pressão da linha principal e aumento de vibração no conjunto motobomba secundário. Recomenda-se inspeção mecânica preventiva em até 24h."
+}
