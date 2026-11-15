@@ -1,0 +1,6 @@
+Chamado Engenharia Clínica #8841 - UTI Adulto Leito 07
+Equipamento: Ventilador Pulmonar Mecânico Microprocessado (Patrimônio HC-9921)
+Paciente: João Carlos da Silva | CPF: 123.456.789-00 | Prontuário: 998877-HC
+Contato do familiar responsável: maria.silva@email.com / (16) 99123-4567
+Descrição técnica:
+O ventilador pulmonar apresentou falha intermitente na bateria interna de backup (alarme sonoro de queda de tensão quando desconectado da rede AC) e descalibração de 15% no sensor de fluxo expiratório. O equipamento já foi substituído no leito por unidade reserva e aguarda manutenção corretiva urgente na bancada da engenharia clínica.
