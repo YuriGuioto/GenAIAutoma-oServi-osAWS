@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Etapa 5 (Opcional - Plano de Controle AgentCore no Floci):
+  Registra um recurso AWS::BedrockAgentCore::Runtime para demonstrar o modelo
+  de implantacao de agentes gerenciados na AWS.
+
+Resources:
+  AgenteDiagnosticoRuntime:
+    Type: "AWS::BedrockAgentCore::Runtime"
+    Properties:
+      AgentRuntimeName: "agente-diagnostico-asg-campo"
+      Description: "Runtime do agente SRE para diagnostico do Auto Scaling asg-campo"
+      RoleArn: "arn:aws:iam::000000000000:role/triagem-lambda"
+      AgentRuntimeArtifact:
+        ContainerConfiguration:
+          ContainerUri: "000000000000.dkr.ecr.us-east-1.amazonaws.com/agente-asg:latest"
+      NetworkConfiguration:
+        NetworkMode: "PUBLIC"
+
+Outputs:
+  AgentRuntimeNameOutput:
+    Description: "Nome do Runtime registrado no plano de controle do Floci"
+    Value: !Ref AgenteDiagnosticoRuntime

@@ -1,0 +1,47 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "LeituraMetricasEAutoScaling",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:GetMetricStatistics",
+        "cloudwatch:DescribeAlarms",
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeScalingActivities"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "EscritaRestritaAoAsgCampo",
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:SetDesiredCapacity"
+      ],
+      "Resource": [
+        "arn:aws:autoscaling:us-east-1:000000000000:autoScalingGroup:*:autoScalingGroupName/asg-campo",
+        "arn:aws:autoscaling:us-east-1:000000000000:autoScalingGroup/asg-campo"
+      ]
+    },
+    {
+      "Sid": "EscritaAuditoriaCloudWatchLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams"
+      ],
+      "Resource": "arn:aws:logs:us-east-1:000000000000:log-group:/aws/agente/diagnostico:*"
+    },
+    {
+      "Sid": "InvocacaoBedrockRuntime",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:Converse"
+      ],
+      "Resource": "arn:aws:bedrock:us-east-1::foundation-model/*"
+    }
+  ]
+}
