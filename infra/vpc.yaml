@@ -1,0 +1,227 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Etapa 3 (AG822) - Arquitetura do Lab 2 revisada + recursos da Etapa 4:
+  VPC com sub-rede publica e privada, Internet Gateway, Route Table,
+  Security Group restrito a HTTP (80), instancia EC2 t3.micro com AMI via SSM,
+  bucket S3 e tabela DynamoDB com tags de alocacao de custo.
+
+Parameters:
+  ProjectTag:
+    Type: String
+    Default: "AG822-GenAI-Floci"
+    Description: "Tag de identificacao de custo por projeto (Unidade II)"
+
+  CostCenterTag:
+    Type: String
+    Default: "EngComp-10Etapa-UNAERP"
+    Description: "Centro de custo academico para governanca financeira"
+
+  VpcCidr:
+    Type: String
+    Default: "10.0.0.0/16"
+    Description: "Bloco CIDR da VPC principal"
+
+  PublicSubnetCidr:
+    Type: String
+    Default: "10.0.1.0/24"
+    Description: "Bloco CIDR da sub-rede publica"
+
+  PrivateSubnetCidr:
+    Type: String
+    Default: "10.0.2.0/24"
+    Description: "Bloco CIDR da sub-rede privada"
+
+  LatestAmiId:
+    Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
+    Default: "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+    Description: "ID da AMI obtido dinamicamente via AWS Systems Manager Parameter Store"
+
+  BucketRelatoriosName:
+    Type: String
+    Default: "relatorios-campo-iac"
+    Description: "Nome do bucket S3 para recebimento de relatorios de campo"
+
+  TabelaTriagemName:
+    Type: String
+    Default: "triagem-iac"
+    Description: "Nome da tabela DynamoDB para armazenar o resultado da triagem"
+
+Resources:
+  LabVPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: "vpc-lab-ia"
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+  LabInternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: "igw-lab-ia"
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+  LabVPCGatewayAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      VpcId: !Ref LabVPC
+      InternetGatewayId: !Ref LabInternetGateway
+
+  PublicSubnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref LabVPC
+      CidrBlock: !Ref PublicSubnetCidr
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: "subnet-publica-lab-ia"
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+  PrivateSubnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      VpcId: !Ref LabVPC
+      CidrBlock: !Ref PrivateSubnetCidr
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: "subnet-privada-lab-ia"
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+  PublicRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref LabVPC
+      Tags:
+        - Key: Name
+          Value: "rtb-publica-lab-ia"
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+  PublicDefaultRoute:
+    Type: "AWS::EC2::Route"
+    DependsOn: LabVPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref LabInternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  WebServerSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Libera exclusivamente trafego HTTP na porta 80 (sem SSH 22 aberto para 0.0.0.0/0)"
+      VpcId: !Ref LabVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: "0.0.0.0/0"
+          Description: "Acesso HTTP publico ao servidor web"
+      Tags:
+        - Key: Name
+          Value: "sg-web-http-only"
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+  WebServerInstance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      InstanceType: "t3.micro"
+      ImageId: !Ref LatestAmiId
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds:
+        - !GetAtt WebServerSecurityGroup.GroupId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          dnf update -y
+          dnf install -y httpd
+          systemctl enable httpd
+          systemctl start httpd
+          echo "<h1>Servidor Web Lab IA - Projeto ${ProjectTag}</h1>" > /var/www/html/index.html
+      Tags:
+        - Key: Name
+          Value: "ec2-web-lab-ia"
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+  RelatoriosBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Ref BucketRelatoriosName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+  TriagemTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: !Ref TabelaTriagemName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: arquivo
+          AttributeType: S
+      KeySchema:
+        - AttributeName: arquivo
+          KeyType: HASH
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectTag
+        - Key: CostCenter
+          Value: !Ref CostCenterTag
+
+Outputs:
+  VpcId:
+    Description: "ID da VPC criada"
+    Value: !Ref LabVPC
+
+  WebServerPublicIp:
+    Description: "Endereco IP publico da instancia EC2 web"
+    Value: !GetAtt WebServerInstance.PublicIp
+
+  BucketNameOutput:
+    Description: "Nome do bucket S3 para relatorios de campo"
+    Value: !Ref RelatoriosBucket
+
+  DynamoDBTableArn:
+    Description: "ARN da tabela DynamoDB de triagem"
+    Value: !GetAtt TriagemTable.Arn
