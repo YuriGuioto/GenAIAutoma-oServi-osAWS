@@ -9,8 +9,7 @@ services:
       FLOCI_SERVICES_BEDROCK_RUNTIME_BACKEND: proxy
       FLOCI_SERVICES_BEDROCK_RUNTIME_PROXY_URL: http://ollama:11434/v1
       FLOCI_SERVICES_BEDROCK_RUNTIME_PROXY_DEFAULT_MODEL: llama3.2
-      # Ativado a partir da Etapa 2 para validar políticas IAM de menor privilégio
-      FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED: "false"
+      FLOCI_SERVICES_IAM_ENFORCEMENT_ENABLED: "true"
     volumes:
       - ./data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock
