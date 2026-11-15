@@ -1,0 +1,21 @@
+# Dados persistidos do Floci e pacotes empacotados
+data/
+*.zip
+
+# Ambientes virtuais e cache Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Variáveis de ambiente locais e credenciais temporárias
+.env
+.env.local
+*.pem
+*.key
+credenciais-temp.json
+
+# Arquivos de sistema operacional e IDEs
+.DS_Store
+Thumbs.db
